@@ -38,10 +38,10 @@ function useReveal() {
 function useFavicon() {
   const { site } = useContent();
   useEffect(() => {
-    const link = document.querySelector('link[rel="icon"]');
+    const link = document.querySelector('link[rel="icon"]'); // el primero: 32x32
     if (!link) return;
     if (site.logo) { link.href = site.logo; link.removeAttribute('type'); }
-    else { link.href = './favicon.svg'; link.type = 'image/svg+xml'; }
+    else { link.href = './favicon-32.png'; link.type = 'image/png'; }
   }, [site.logo]);
 }
 

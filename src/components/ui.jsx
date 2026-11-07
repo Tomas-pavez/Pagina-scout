@@ -11,16 +11,8 @@ export const RAMA_ICONS = { PawPrint, Bird, Compass, Tent, Mountain, HeartHandsh
 
 export function Logo({ size = 44 }) {
   const { site } = useContent();
-  if (site.logo) return <img className="logo-img" src={site.logo} width={size} height={size} alt="" aria-hidden="true" />;
-  return (
-    <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden="true">
-      <circle cx="32" cy="32" r="31" fill="#19345F" stroke="#F57514" strokeWidth="2" />
-      <path
-        fill="#F57514"
-        d="M32 9c-4 5-6 10-6 15 0 4 2 7 4 9-3 0-6-2-8-5-2-4-1-8 1-11-6 2-10 8-9 14 1 5 5 8 10 8h3v4h-5v4h5v8h10v-8h5v-4h-5v-4h3c5 0 9-3 10-8 1-6-3-12-9-14 2 3 3 7 1 11-2 3-5 5-8 5 2-2 4-5 4-9 0-5-2-10-6-15z"
-      />
-    </svg>
-  );
+  // Logo subido en Administración > Datos del sitio; si no hay, el logo oficial del grupo.
+  return <img className="logo-img" src={site.logo || './logo.png'} width={size} height={size} alt="" aria-hidden="true" />;
 }
 
 /** Imagen de una rama; si no tiene imagen, muestra una ilustración con su color. */
