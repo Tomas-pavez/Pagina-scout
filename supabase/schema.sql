@@ -63,17 +63,35 @@ create policy "editar" on records for update using (is_admin());
 drop policy if exists "eliminar" on records;
 create policy "eliminar" on records for delete using (is_admin());
 
--- 3) Archivos (fotos, imágenes, documentos) ---------------------------------
+-- 3) Archivos ----------------------------------------------------------------
+-- "media" (público): imágenes de ramas, fotos del equipo y documentos de ramas.
+--   Se ven con su enlace, pero solo los administradores pueden LISTAR el bucket
+--   (antes cualquiera podía obtener la lista de archivos).
 insert into storage.buckets (id, name, public) values ('media', 'media', true)
   on conflict (id) do nothing;
 drop policy if exists "media lectura" on storage.objects;
-create policy "media lectura" on storage.objects for select using (bucket_id = 'media');
+drop policy if exists "media listar admin" on storage.objects;
+create policy "media listar admin" on storage.objects for select using (bucket_id = 'media' and public.is_admin());
 drop policy if exists "media subir" on storage.objects;
 create policy "media subir" on storage.objects for insert with check (bucket_id = 'media' and public.is_admin());
 drop policy if exists "media editar" on storage.objects;
 create policy "media editar" on storage.objects for update using (bucket_id = 'media' and public.is_admin());
 drop policy if exists "media eliminar" on storage.objects;
 create policy "media eliminar" on storage.objects for delete using (bucket_id = 'media' and public.is_admin());
+
+-- "privado": fotos de álbumes y archivos de comunicaciones.
+--   No tiene enlaces públicos: la página pide un enlace temporal (1 hora),
+--   y solo los miembros aprobados pueden pedirlo.
+insert into storage.buckets (id, name, public) values ('privado', 'privado', false)
+  on conflict (id) do update set public = false;
+drop policy if exists "privado ver" on storage.objects;
+create policy "privado ver" on storage.objects for select using (bucket_id = 'privado' and public.is_member());
+drop policy if exists "privado subir" on storage.objects;
+create policy "privado subir" on storage.objects for insert with check (bucket_id = 'privado' and public.is_admin());
+drop policy if exists "privado editar" on storage.objects;
+create policy "privado editar" on storage.objects for update using (bucket_id = 'privado' and public.is_admin());
+drop policy if exists "privado eliminar" on storage.objects;
+create policy "privado eliminar" on storage.objects for delete using (bucket_id = 'privado' and public.is_admin());
 
 -- 4) Datos iniciales ---------------------------------------------------------
 insert into records (collection, id, data) values

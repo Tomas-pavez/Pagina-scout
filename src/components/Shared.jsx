@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Mail, Phone, Music, UtensilsCrossed, Lightbulb, Pencil, Trash2, Clock, MapPin, Images, ShieldCheck, User } from 'lucide-react';
 import { EVENT_TYPES } from '../data/seed.js';
 import { formatDate } from '../lib/hooks.jsx';
+import { SmartImg } from './ui.jsx';
 
 export const eventTypeLabel = (t) => EVENT_TYPES.find((x) => x.id === t)?.label || 'Otro';
 export const ramaById = (ramas, id) => ramas.find((r) => r.id === id);
@@ -72,7 +73,7 @@ export function AlbumCard({ album, ramas, count }) {
   return (
     <Link to={`/fotos/${album.id}`} className="card album-card reveal" style={{ '--rama': color }}>
       <div className="album-cover">
-        {album.cover ? <img src={album.cover} alt={album.title} loading="lazy" /> : <div className="album-ph"><Images size={40} /></div>}
+        {album.cover ? <SmartImg src={album.cover} alt={album.title} loading="lazy" /> : <div className="album-ph"><Images size={40} /></div>}
         {typeof count === 'number' && <span className="age-badge">{count} {count === 1 ? 'foto' : 'fotos'}</span>}
       </div>
       <div className="card-body">

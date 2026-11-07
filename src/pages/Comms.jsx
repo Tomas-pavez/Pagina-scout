@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Plus, Megaphone, Download, ExternalLink, Pencil, Trash2, Upload, Loader2, FileText } from 'lucide-react';
-import { Empty, Field, Loading, Modal, PageHero } from '../components/ui.jsx';
+import { Empty, Field, Loading, Modal, PageHero, SmartLink } from '../components/ui.jsx';
 import { unitColor, unitLabel } from '../components/Shared.jsx';
 import { COMM_TYPES } from '../data/seed.js';
 import { formatDate, todayISO, useAuth, useCollection, useRamas, useToast } from '../lib/hooks.jsx';
@@ -25,7 +25,7 @@ export default function Comms() {
 
   const del = async (c) => {
     if (!window.confirm(`¿Eliminar "${c.title}"?`)) return;
-    try { await db.remove('comms', c.id); toast('Comunicación eliminada'); } catch (e) { toast(e.message, 'error'); }
+    try { await db.remove('comms', c.id); await db.deleteFile(c.fileUrl); toast('Comunicación eliminada'); } catch (e) { toast(e.message, 'error'); }
   };
 
   return (
@@ -67,7 +67,7 @@ export default function Comms() {
                   {c.description && <p className="pre">{c.description}</p>}
                   <div className="row-gap">
                     {c.fileUrl && (
-                      <a className="btn btn-sm btn-secondary" href={c.fileUrl} download={c.fileName || true} target="_blank" rel="noreferrer"><Download size={15} /> {c.fileName || 'Descargar archivo'}</a>
+                      <SmartLink className="btn btn-sm btn-secondary" href={c.fileUrl} download={c.fileName || true} target="_blank" rel="noreferrer"><Download size={15} /> {c.fileName || 'Descargar archivo'}</SmartLink>
                     )}
                     {c.link && <a className="btn btn-sm btn-outline" href={c.link} target="_blank" rel="noreferrer"><ExternalLink size={15} /> Abrir enlace</a>}
                   </div>
@@ -98,7 +98,7 @@ function CommForm({ initial, ramas, onClose }) {
     if (!file) return;
     setUploading(true);
     try {
-      const url = await db.upload(file, { folder: 'comunicaciones', maxDim: 2200 });
+      const url = await db.upload(file, { folder: 'comunicaciones', maxDim: 2200, private: true });
       setF((x) => ({ ...x, fileUrl: url, fileName: file.name }));
     } catch (e) { toast(e.message, 'error'); } finally { setUploading(false); }
   };

@@ -99,8 +99,46 @@ export function Field({ label, required, hint, children, full }) {
   );
 }
 
+/** Devuelve una URL lista para mostrar; las referencias privadas se convierten en enlaces temporales. */
+export function useResolvedUrl(src) {
+  const [url, setUrl] = useState(db.isPrivateRef(src) ? '' : src);
+  useEffect(() => {
+    let alive = true;
+    if (!db.isPrivateRef(src)) { setUrl(src); return undefined; }
+    setUrl('');
+    db.resolveUrl(src).then((u) => alive && setUrl(u)).catch(() => alive && setUrl(''));
+    return () => { alive = false; };
+  }, [src]);
+  return url;
+}
+
+/** <img> que también sabe mostrar fotos privadas. */
+export function SmartImg({ src, alt = '', ...props }) {
+  const url = useResolvedUrl(src);
+  if (!url) return <span className="img-loading" aria-label={alt} />;
+  return <img src={url} alt={alt} {...props} />;
+}
+
+/** Enlace a un archivo que puede ser privado (se pide el enlace temporal al pulsarlo). */
+export function SmartLink({ href, children, download, ...props }) {
+  const toast = useToast();
+  if (!db.isPrivateRef(href)) return <a href={href} download={download} {...props}>{children}</a>;
+  const open = async (e) => {
+    e.preventDefault();
+    const w = window.open('', '_blank');
+    try {
+      const u = await db.resolveUrl(href);
+      if (w) w.location.href = u; else window.location.href = u;
+    } catch {
+      if (w) w.close();
+      toast('No se pudo abrir el archivo.', 'error');
+    }
+  };
+  return <a href="#" onClick={open} {...props}>{children}</a>;
+}
+
 /** Selector de imagen: sube el archivo y devuelve la URL mediante onChange. */
-export function ImageInput({ value, onChange, folder, label = 'Imagen', maxDim }) {
+export function ImageInput({ value, onChange, folder, label = 'Imagen', maxDim, private: priv = false }) {
   const [busy, setBusy] = useState(false);
   const toast = useToast();
   const inputRef = useRef();
@@ -109,7 +147,7 @@ export function ImageInput({ value, onChange, folder, label = 'Imagen', maxDim }
     if (!file.type.startsWith('image/')) return toast('Selecciona un archivo de imagen.', 'error');
     setBusy(true);
     try {
-      onChange(await db.upload(file, { folder, maxDim }));
+      onChange(await db.upload(file, { folder, maxDim, private: priv }));
     } catch (e) {
       toast(e.message || 'No se pudo subir la imagen.', 'error');
     } finally {
@@ -120,7 +158,7 @@ export function ImageInput({ value, onChange, folder, label = 'Imagen', maxDim }
   return (
     <div className="image-input">
       <div className="image-input-preview">
-        {value ? <img src={value} alt="Vista previa" /> : <ImagePlus size={28} />}
+        {value ? <SmartImg src={value} alt="Vista previa" /> : <ImagePlus size={28} />}
         {busy && <div className="image-input-busy"><Loader2 className="spin" /></div>}
       </div>
       <div className="image-input-actions">

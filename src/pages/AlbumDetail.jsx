@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, ChevronLeft, ChevronRight, Images, Pencil, Trash2, UploadCloud, Star, X, Loader2, Check } from 'lucide-react';
-import { Empty, Loading } from '../components/ui.jsx';
+import { Empty, Loading, SmartImg } from '../components/ui.jsx';
 import { unitColor, unitLabel } from '../components/Shared.jsx';
 import { AlbumForm } from './Photos.jsx';
 import { formatDate, useAuth, useCollection, useRamas, useToast } from '../lib/hooks.jsx';
@@ -34,7 +34,8 @@ export default function AlbumDetail() {
   const deleteAlbum = async () => {
     if (!window.confirm(`¿Eliminar el álbum "${album.title}" y sus ${photos.length} fotos?`)) return;
     try {
-      for (const p of photos) await db.remove('photos', p.id);
+      for (const p of photos) { await db.remove('photos', p.id); await db.deleteFile(p.src); }
+      if (album.cover && !photos.some((p) => p.src === album.cover)) await db.deleteFile(album.cover);
       await db.remove('albums', album.id);
       toast('Álbum eliminado');
       nav('/fotos');
@@ -99,7 +100,7 @@ function PhotoUploader({ album, hasCover }) {
     let coverSet = hasCover;
     for (let i = 0; i < files.length; i++) {
       try {
-        const src = await db.upload(files[i], { folder: `albumes/${album.id}`, maxDim: 1920 });
+        const src = await db.upload(files[i], { folder: `albumes/${album.id}`, maxDim: 1920, private: true });
         // createdAt incremental para conservar el orden de subida
         await db.save('photos', { albumId: album.id, src, caption: '', createdAt: new Date(start + i).toISOString() });
         if (!coverSet) {
@@ -170,6 +171,7 @@ function PhotoTile({ photo, album, isAdmin, onOpen }) {
     if (!window.confirm('¿Eliminar esta foto?')) return;
     try {
       await db.remove('photos', photo.id);
+      await db.deleteFile(photo.src);
       if (isCover) await db.patch('albums', album.id, { cover: '' });
       toast('Foto eliminada');
     } catch (err) { toast(err.message, 'error'); }
@@ -184,7 +186,7 @@ function PhotoTile({ photo, album, isAdmin, onOpen }) {
   return (
     <figure className="photo-tile">
       <button type="button" className="photo-open" onClick={onOpen} aria-label={`Ver foto ${photo.caption || ''}`}>
-        <img src={photo.src} alt={photo.caption || `Foto de ${album.title}`} loading="lazy" />
+        <SmartImg src={photo.src} alt={photo.caption || `Foto de ${album.title}`} loading="lazy" />
       </button>
       {isCover && <span className="cover-badge"><Star size={12} /> Portada</span>}
       {editing ? (
@@ -223,7 +225,7 @@ function Lightbox({ photos, index, setIndex, onClose }) {
       <button className="icon-btn lb-close" onClick={onClose} aria-label="Cerrar"><X /></button>
       {photos.length > 1 && <button className="icon-btn lb-prev" onClick={prev} aria-label="Anterior"><ChevronLeft size={32} /></button>}
       <figure>
-        <img src={p.src} alt={p.caption || 'Foto'} />
+        <SmartImg src={p.src} alt={p.caption || 'Foto'} />
         <figcaption>{p.caption} <span className="muted">{index + 1} / {photos.length}</span></figcaption>
       </figure>
       {photos.length > 1 && <button className="icon-btn lb-next" onClick={next} aria-label="Siguiente"><ChevronRight size={32} /></button>}

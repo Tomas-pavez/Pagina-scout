@@ -164,8 +164,48 @@ export async function resizeImage(file, maxDim = 1600, quality = 0.82) {
   }
 }
 
-/** Sube un archivo y devuelve una URL utilizable en <img> o <a href>. */
-export async function upload(file, { folder = 'general', maxDim = 1600 } = {}) {
+// Archivos privados (fotos de álbumes, archivos de comunicaciones): van al bucket "privado".
+// En los datos se guarda una referencia "privado:ruta" y se muestran con un enlace temporal
+// (válido 1 hora) que solo pueden pedir miembros aprobados.
+const PRIVATE_BUCKET = 'privado';
+const PRIVATE_PREFIX = 'privado:';
+const SIGNED_SECONDS = 3600;
+const signedCache = new Map();
+
+export const isPrivateRef = (u) => typeof u === 'string' && u.startsWith(PRIVATE_PREFIX);
+
+/** Convierte una referencia privada en un enlace temporal. Las URLs normales se devuelven igual. */
+export async function resolveUrl(u) {
+  if (!isPrivateRef(u) || !sb) return u;
+  const path = u.slice(PRIVATE_PREFIX.length);
+  const hit = signedCache.get(path);
+  if (hit && hit.exp > Date.now()) return hit.url;
+  const { data, error } = await sb.storage.from(PRIVATE_BUCKET).createSignedUrl(path, SIGNED_SECONDS);
+  if (error) throw error;
+  signedCache.set(path, { url: data.signedUrl, exp: Date.now() + (SIGNED_SECONDS - 300) * 1000 });
+  return data.signedUrl;
+}
+
+/** Borra del almacenamiento el archivo de una URL o referencia (si es de Supabase). */
+export async function deleteFile(u) {
+  if (!sb || typeof u !== 'string' || !u) return;
+  try {
+    if (isPrivateRef(u)) {
+      const path = u.slice(PRIVATE_PREFIX.length);
+      signedCache.delete(path);
+      await sb.storage.from(PRIVATE_BUCKET).remove([path]);
+    } else {
+      const marker = '/storage/v1/object/public/media/';
+      const i = u.indexOf(marker);
+      if (i >= 0) await sb.storage.from('media').remove([decodeURIComponent(u.slice(i + marker.length))]);
+    }
+  } catch {
+    /* si no se puede borrar el archivo, el registro igual se elimina */
+  }
+}
+
+/** Sube un archivo y devuelve una URL utilizable en <img> o <a href> (o una referencia privada). */
+export async function upload(file, { folder = 'general', maxDim = 1600, private: priv = false } = {}) {
   const isImage = file.type.startsWith('image/');
   const blob = isImage ? await resizeImage(file, maxDim) : file;
   if (MODE === 'local') {
@@ -174,6 +214,11 @@ export async function upload(file, { folder = 'general', maxDim = 1600 } = {}) {
   }
   const ext = isImage && blob !== file ? 'jpg' : (file.name.split('.').pop() || 'bin').toLowerCase();
   const path = `${folder}/${uid()}.${ext}`;
+  if (priv) {
+    const { error } = await sb.storage.from(PRIVATE_BUCKET).upload(path, blob, { contentType: blob.type || file.type });
+    if (error) throw error;
+    return PRIVATE_PREFIX + path;
+  }
   const { error } = await sb.storage.from('media').upload(path, blob, { contentType: blob.type || file.type });
   if (error) throw error;
   return sb.storage.from('media').getPublicUrl(path).data.publicUrl;

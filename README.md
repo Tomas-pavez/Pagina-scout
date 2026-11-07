@@ -33,7 +33,7 @@ npm run dev
 3. Copia `.env.example` a `.env` y completa la URL y la clave *anon* del proyecto (Project Settings → API).
 4. Para GitHub Pages, agrega esas dos variables como *secrets* del repositorio (Settings → Secrets and variables → Actions) con los nombres `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`.
 
-> Nota: las fotos se guardan en un bucket público de Supabase con nombres aleatorios. La galería solo se muestra a miembros aprobados, pero quien tenga el enlace directo de una foto puede verla.
+> Privacidad de archivos: las fotos de los álbumes y los archivos de comunicaciones se guardan en el bucket privado `privado`. La página los muestra con enlaces temporales (1 hora) que solo pueden pedir miembros aprobados. Las imágenes de ramas y del equipo, que son públicas, van en el bucket `media`. Si tu proyecto se creó antes de noviembre de 2026, ejecuta también [`supabase/actualizacion-fotos-privadas.sql`](supabase/actualizacion-fotos-privadas.sql).
 
 ## Publicar en GitHub Pages
 

@@ -85,7 +85,7 @@ export function AlbumForm({ initial, ramas, onClose, onSaved }) {
             </select>
           </Field>
           <Field label="Descripción" full><textarea rows={3} value={f.description} onChange={set('description')} /></Field>
-          <div className="full"><ImageInput label="Portada" value={f.cover} onChange={set('cover')} folder="albumes/portadas" /></div>
+          <div className="full"><ImageInput label="Portada" value={f.cover} onChange={set('cover')} folder="albumes/portadas" private /></div>
         </div>
         <div className="form-actions">
           <button type="button" className="btn btn-ghost" onClick={onClose}>Cancelar</button>
