@@ -56,9 +56,43 @@ export function useRama(id) {
   return { rama: ramas.find((r) => r.id === id), loading, error };
 }
 
-export function useSettings() {
+/* ---------- Contenido editable (datos del sitio + textos) ----------
+   Todo vive en la colección pública "settings":
+   - "site": datos generales (logo, nombre, dirección, redes...).
+   - "t:<clave>": un texto de la página. Cada texto es un registro propio,
+     así editar uno nunca toca a los demás. */
+const ContentCtx = createContext(null);
+const EDIT_KEY = 'modo-edicion';
+
+export function ContentProvider({ children }) {
   const { items, loading } = useCollection('settings');
-  return { settings: { ...SETTINGS_BASE, ...(items.find((i) => i.id === 'site') || {}) }, loading };
+  const [editMode, setEditModeState] = useState(() => {
+    try { return localStorage.getItem(EDIT_KEY) === '1'; } catch { return false; }
+  });
+  const setEditMode = useCallback((v) => {
+    setEditModeState(v);
+    try { localStorage.setItem(EDIT_KEY, v ? '1' : '0'); } catch { /* sin almacenamiento */ }
+  }, []);
+  const site = { ...SETTINGS_BASE, ...(items.find((i) => i.id === 'site') || {}) };
+  const texts = {};
+  items.forEach((i) => { if (i.id.startsWith('t:') && typeof i.value === 'string') texts[i.id.slice(2)] = i.value; });
+  return (
+    <ContentCtx.Provider value={{ site, texts, loading, editMode, setEditMode }}>
+      {children}
+    </ContentCtx.Provider>
+  );
+}
+export const useContent = () => useContext(ContentCtx);
+
+export function useSettings() {
+  const { site, loading } = useContent();
+  return { settings: site, loading };
+}
+
+/** Guarda un texto editable (o lo borra para volver al texto original). */
+export async function saveText(key, value) {
+  if (value === null) return db.remove('settings', `t:${key}`);
+  return db.save('settings', { id: `t:${key}`, value });
 }
 
 /* ---------- Avisos (toasts) ---------- */

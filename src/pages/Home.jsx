@@ -3,7 +3,7 @@ import {
   Compass, CalendarDays, MessageCircle, Trees, Users, HeartHandshake, Sparkles, Flame, Map, Award, ArrowRight, CheckCircle2,
 } from 'lucide-react';
 import RamaCard from '../components/RamaCard.jsx';
-import { Loading } from '../components/ui.jsx';
+import { Loading, T } from '../components/ui.jsx';
 import { useRamas } from '../lib/hooks.jsx';
 
 const BENEFITS = [
@@ -31,13 +31,13 @@ export default function Home() {
           </svg>
         </div>
         <div className="container hero-inner">
-          <span className="eyebrow light">Asociación de Guías y Scouts de Chile</span>
-          <h1>Grupo Scout <span className="accent">Alcázar</span></h1>
-          <p className="lead">Desde Las Condes, invitamos a niñas, niños y jóvenes de 7 a 19 años a vivir el escultismo: aventura, amistad, naturaleza y servicio.</p>
+          <span className="eyebrow light"><T k="inicio.portada.antetitulo">Asociación de Guías y Scouts de Chile</T></span>
+          <h1><T k="inicio.portada.titulo1">Grupo Scout</T> <span className="accent"><T k="inicio.portada.titulo2">Alcázar</T></span></h1>
+          <p className="lead"><T k="inicio.portada.texto">Desde Las Condes, invitamos a niñas, niños y jóvenes de 7 a 19 años a vivir el escultismo: aventura, amistad, naturaleza y servicio.</T></p>
           <div className="hero-cta">
-            <Link className="btn btn-primary btn-lg" to="/contacto"><MessageCircle size={20} /> Contáctanos</Link>
-            <Link className="btn btn-light btn-lg" to="/ramas"><Compass size={20} /> Explora las ramas</Link>
-            <Link className="btn btn-outline-light btn-lg" to="/eventos"><CalendarDays size={20} /> Ver eventos</Link>
+            <Link className="btn btn-primary btn-lg" to="/contacto"><MessageCircle size={20} /> <T k="inicio.portada.boton1">Contáctanos</T></Link>
+            <Link className="btn btn-light btn-lg" to="/ramas"><Compass size={20} /> <T k="inicio.portada.boton2">Explora las ramas</T></Link>
+            <Link className="btn btn-outline-light btn-lg" to="/eventos"><CalendarDays size={20} /> <T k="inicio.portada.boton3">Ver eventos</T></Link>
           </div>
         </div>
       </section>
@@ -45,22 +45,22 @@ export default function Home() {
       <section className="section">
         <div className="container split">
           <div className="reveal">
-            <span className="eyebrow">Quiénes somos</span>
-            <h2>Un lugar para crecer, explorar y servir</h2>
-            <p>Somos un grupo scout de Las Condes formado por familias, jóvenes y dirigentes voluntarios. Cada sábado nos reunimos para jugar, aprender y prepararnos para nuevas aventuras, siguiendo el método scout de la Asociación de Guías y Scouts de Chile.</p>
+            <span className="eyebrow"><T k="inicio.grupo.antetitulo">Quiénes somos</T></span>
+            <h2><T k="inicio.grupo.titulo">Un lugar para crecer, explorar y servir</T></h2>
+            <p><T k="inicio.grupo.texto">Somos un grupo scout de Las Condes formado por familias, jóvenes y dirigentes voluntarios. Cada sábado nos reunimos para jugar, aprender y prepararnos para nuevas aventuras, siguiendo el método scout de la Asociación de Guías y Scouts de Chile.</T></p>
             <ul className="checklist">
-              <li><CheckCircle2 size={20} /> Programa adaptado a cada edad</li>
-              <li><CheckCircle2 size={20} /> Dirigentes capacitados y comprometidos</li>
-              <li><CheckCircle2 size={20} /> Actividades seguras y con propósito</li>
+              <li><CheckCircle2 size={20} /> <T k="inicio.grupo.punto1">Programa adaptado a cada edad</T></li>
+              <li><CheckCircle2 size={20} /> <T k="inicio.grupo.punto2">Dirigentes capacitados y comprometidos</T></li>
+              <li><CheckCircle2 size={20} /> <T k="inicio.grupo.punto3">Actividades seguras y con propósito</T></li>
             </ul>
-            <Link to="/quienes-somos" className="btn btn-secondary">Conoce nuestra historia <ArrowRight size={18} /></Link>
+            <Link to="/quienes-somos" className="btn btn-secondary"><T k="inicio.grupo.boton">Conoce nuestra historia</T> <ArrowRight size={18} /></Link>
           </div>
           <div className="benefit-grid">
-            {BENEFITS.map(({ icon: Icon, title, text }) => (
+            {BENEFITS.map(({ icon: Icon, title, text }, i) => (
               <div className="card benefit reveal" key={title}>
                 <span className="icon-circle"><Icon size={24} /></span>
-                <h3>{title}</h3>
-                <p>{text}</p>
+                <h3><T k={`inicio.beneficio${i + 1}.titulo`}>{title}</T></h3>
+                <p><T k={`inicio.beneficio${i + 1}.texto`}>{text}</T></p>
               </div>
             ))}
           </div>
@@ -70,16 +70,16 @@ export default function Home() {
       <section className="section section-tint">
         <div className="container">
           <div className="section-head reveal">
-            <span className="eyebrow">La experiencia scout</span>
-            <h2>Más que una actividad de fin de semana</h2>
-            <p>El escultismo es un movimiento educativo presente en más de 170 países. Aquí cada joven es protagonista de su propio crecimiento.</p>
+            <span className="eyebrow"><T k="inicio.experiencia.antetitulo">La experiencia scout</T></span>
+            <h2><T k="inicio.experiencia.titulo">Más que una actividad de fin de semana</T></h2>
+            <p><T k="inicio.experiencia.texto">El escultismo es un movimiento educativo presente en más de 170 países. Aquí cada joven es protagonista de su propio crecimiento.</T></p>
           </div>
           <div className="grid-3">
-            {EXPERIENCE.map(({ icon: Icon, title, text }) => (
+            {EXPERIENCE.map(({ icon: Icon, title, text }, i) => (
               <div className="card feature reveal" key={title}>
                 <span className="icon-circle orange"><Icon size={26} /></span>
-                <h3>{title}</h3>
-                <p>{text}</p>
+                <h3><T k={`inicio.experiencia${i + 1}.titulo`}>{title}</T></h3>
+                <p><T k={`inicio.experiencia${i + 1}.texto`}>{text}</T></p>
               </div>
             ))}
           </div>
@@ -89,9 +89,9 @@ export default function Home() {
       <section className="section">
         <div className="container">
           <div className="section-head reveal">
-            <span className="eyebrow">Nuestras ramas</span>
-            <h2>Una unidad para cada etapa</h2>
-            <p>Seis ramas acompañan a niñas, niños y jóvenes en cada momento de su desarrollo.</p>
+            <span className="eyebrow"><T k="inicio.ramas.antetitulo">Nuestras ramas</T></span>
+            <h2><T k="inicio.ramas.titulo">Una unidad para cada etapa</T></h2>
+            <p><T k="inicio.ramas.texto">Seis ramas acompañan a niñas, niños y jóvenes en cada momento de su desarrollo.</T></p>
           </div>
           {loading ? <Loading /> : (
             <div className="grid-3">{ramas.map((r) => <RamaCard key={r.id} rama={r} cta="Conocer" />)}</div>
@@ -102,13 +102,13 @@ export default function Home() {
       <section className="section section-tint">
         <div className="container join reveal">
           <div>
-            <span className="eyebrow">Súmate</span>
-            <h2>¿Cómo integrarse al grupo?</h2>
+            <span className="eyebrow"><T k="inicio.unirse.antetitulo">Súmate</T></span>
+            <h2><T k="inicio.unirse.titulo">¿Cómo integrarse al grupo?</T></h2>
           </div>
           <ol className="steps">
-            <li><b>1</b><div><h3>Escríbenos</h3><p>Completa el formulario de contacto con la edad de tu hijo o hija.</p></div></li>
-            <li><b>2</b><div><h3>Ven a una reunión</h3><p>Te invitamos a un sábado de prueba para conocer la rama.</p></div></li>
-            <li><b>3</b><div><h3>Inscríbete</h3><p>Completa la inscripción en la Asociación y ¡comienza la aventura!</p></div></li>
+            <li><b>1</b><div><h3><T k="inicio.paso1.titulo">Escríbenos</T></h3><p><T k="inicio.paso1.texto">Completa el formulario de contacto con la edad de tu hijo o hija.</T></p></div></li>
+            <li><b>2</b><div><h3><T k="inicio.paso2.titulo">Ven a una reunión</T></h3><p><T k="inicio.paso2.texto">Te invitamos a un sábado de prueba para conocer la rama.</T></p></div></li>
+            <li><b>3</b><div><h3><T k="inicio.paso3.titulo">Inscríbete</T></h3><p><T k="inicio.paso3.texto">Completa la inscripción en la Asociación y ¡comienza la aventura!</T></p></div></li>
           </ol>
         </div>
       </section>
@@ -116,11 +116,11 @@ export default function Home() {
       <section className="section">
         <div className="container">
           <div className="cta-final reveal">
-            <h2>¿Listos para la aventura?</h2>
-            <p>Ven a conocernos un sábado. Te esperamos con los brazos abiertos y el pañolín puesto.</p>
+            <h2><T k="inicio.final.titulo">¿Listos para la aventura?</T></h2>
+            <p><T k="inicio.final.texto">Ven a conocernos un sábado. Te esperamos con los brazos abiertos y el pañolín puesto.</T></p>
             <div className="hero-cta">
-              <Link className="btn btn-primary btn-lg" to="/contacto?motivo=inscripcion">Quiero unirme</Link>
-              <Link className="btn btn-outline-light btn-lg" to="/preguntas-frecuentes">Preguntas frecuentes</Link>
+              <Link className="btn btn-primary btn-lg" to="/contacto?motivo=inscripcion"><T k="inicio.final.boton1">Quiero unirme</T></Link>
+              <Link className="btn btn-outline-light btn-lg" to="/preguntas-frecuentes"><T k="inicio.final.boton2">Preguntas frecuentes</T></Link>
             </div>
           </div>
         </div>

@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Routes, Route, useLocation, Link } from 'react-router-dom';
 import { Navbar, Footer } from './components/Layout.jsx';
-import { Empty, RequireMember } from './components/ui.jsx';
+import { Empty, RequireMember, EditModeToggle } from './components/ui.jsx';
 import Home from './pages/Home.jsx';
 import About from './pages/About.jsx';
 import Ramas from './pages/Ramas.jsx';
@@ -15,7 +15,7 @@ import FAQ from './pages/FAQ.jsx';
 import Contact from './pages/Contact.jsx';
 import Login from './pages/Login.jsx';
 import Admin from './pages/Admin.jsx';
-import { useAuth } from './lib/hooks.jsx';
+import { useAuth, useContent } from './lib/hooks.jsx';
 import { MODE } from './lib/db.js';
 
 /** Anima suavemente los elementos con clase .reveal al entrar en pantalla. */
@@ -34,6 +34,17 @@ function useReveal() {
   }, [loc.pathname]);
 }
 
+/** Usa el logo subido por un administrador como ícono de la pestaña del navegador. */
+function useFavicon() {
+  const { site } = useContent();
+  useEffect(() => {
+    const link = document.querySelector('link[rel="icon"]');
+    if (!link) return;
+    if (site.logo) { link.href = site.logo; link.removeAttribute('type'); }
+    else { link.href = './favicon.svg'; link.type = 'image/svg+xml'; }
+  }, [site.logo]);
+}
+
 function AdminOnly({ children }) {
   const { isAdmin, ready } = useAuth();
   if (!ready) return null;
@@ -46,6 +57,7 @@ export default function App() {
   const { pathname } = useLocation();
   useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
   useReveal();
+  useFavicon();
   return (
     <>
       <Navbar />
@@ -69,6 +81,7 @@ export default function App() {
         </Routes>
       </main>
       <Footer />
+      <EditModeToggle />
     </>
   );
 }

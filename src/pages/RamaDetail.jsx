@@ -185,7 +185,7 @@ function PrivateHint() {
 function RamaEditor({ rama, onClose }) {
   const [tab, setTab] = useState('general');
   const [form, setForm] = useState(() => {
-    const f = { image: rama.image || '', banner: rama.banner || '', documentos: (rama.documentos || []).map((d) => ({ ...d })) };
+    const f = { name: rama.name, ages: rama.ages, description: rama.description, color: rama.color, image: rama.image || '', banner: rama.banner || '', documentos: (rama.documentos || []).map((d) => ({ ...d })) };
     CONTENT_KEYS.forEach((k) => (f[k] = rama[k] || ''));
     return f;
   });
@@ -213,7 +213,9 @@ function RamaEditor({ rama, onClose }) {
     setSaving(true);
     try {
       // Solo se guardan los campos editables de ESTA rama.
-      await db.patch('ramas', rama.id, { ...form, documentos: form.documentos.filter((d) => d.url || d.label) });
+      if (!form.name.trim()) throw new Error('El nombre de la rama es obligatorio');
+      if (!/^#[0-9a-fA-F]{6}$/.test(form.color)) throw new Error('El color debe tener el formato #RRGGBB');
+      await db.patch('ramas', rama.id, { ...form, name: form.name.trim(), documentos: form.documentos.filter((d) => d.url || d.label) });
       toast(`Contenido de ${rama.name} guardado`);
       onClose();
     } catch (err) {
@@ -238,6 +240,16 @@ function RamaEditor({ rama, onClose }) {
       </div>
       <form onSubmit={submit} className="form">
         <div hidden={tab !== 'general'} className="form-grid">
+          <Field label="Nombre de la rama" required><input required value={form.name} onChange={set('name')} /></Field>
+          <Field label="Edades" hint="Ej: 7 a 11 años"><input value={form.ages} onChange={set('ages')} /></Field>
+          <Field label="Descripción corta (se ve en las tarjetas)" full><textarea rows={3} value={form.description} onChange={set('description')} /></Field>
+          <Field label="Color de la rama" hint="Se usa en tarjetas, etiquetas y el calendario.">
+            <div className="color-field">
+              <input type="color" value={form.color} onChange={set('color')} aria-label="Elegir color" />
+              <input value={form.color} onChange={set('color')} maxLength={7} />
+            </div>
+          </Field>
+          <div />
           <ImageInput label="Imagen de tarjeta" value={form.image} onChange={set('image')} folder={`ramas/${rama.id}`} />
           <ImageInput label="Banner de la página" value={form.banner} onChange={set('banner')} folder={`ramas/${rama.id}`} maxDim={2000} />
           {GENERAL.map(([k, label]) => area(k, label, k === 'objetivo' || k === 'actividades' ? 4 : 2))}

@@ -24,7 +24,7 @@ export default function FAQ() {
 
   return (
     <>
-      <PageHero eyebrow="Ayuda" title="Preguntas frecuentes" subtitle="Todo lo que necesitas saber antes de sumarte al grupo." />
+      <PageHero tk="faq.cabecera" eyebrow="Ayuda" title="Preguntas frecuentes" subtitle="Todo lo que necesitas saber antes de sumarte al grupo." />
       <section className="section">
         <div className="container narrow">
           {isAdmin && (

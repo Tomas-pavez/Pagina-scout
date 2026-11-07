@@ -30,7 +30,7 @@ export default function Comms() {
 
   return (
     <>
-      <PageHero eyebrow="Área privada" title="Comunicaciones" subtitle="Comunicados, noticias, autorizaciones, circulares y avisos para las familias." />
+      <PageHero tk="comunicaciones.cabecera" eyebrow="Área privada" title="Comunicaciones" subtitle="Comunicados, noticias, autorizaciones, circulares y avisos para las familias." />
       <section className="section">
         <div className="container">
           <div className="toolbar">

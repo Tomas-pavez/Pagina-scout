@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X, LogIn, LogOut, Mail, MapPin, Clock, ShieldCheck, UserPlus } from 'lucide-react';
-import { Logo, Instagram, Facebook } from './ui.jsx';
+import { Logo, Instagram, Facebook, T } from './ui.jsx';
 import { useAuth, useRamas, useSettings } from '../lib/hooks.jsx';
 import * as db from '../lib/db.js';
 
@@ -43,8 +43,8 @@ export function Navbar() {
         <Link to="/" className="brand" aria-label="Grupo Scout Alcázar, inicio">
           <Logo size={42} />
           <span>
-            <strong>Grupo Scout Alcázar</strong>
-            <small>Las Condes · Santiago</small>
+            <strong><T k="marca.nombre">Grupo Scout Alcázar</T></strong>
+            <small><T k="marca.lugar">Las Condes · Santiago</T></small>
           </span>
         </Link>
         <nav className={`nav-links ${open ? 'open' : ''}`} aria-label="Principal">
@@ -90,10 +90,10 @@ export function Footer() {
         <div>
           <div className="brand brand-footer">
             <Logo size={48} />
-            <span><strong>Grupo Scout Alcázar</strong><small>Las Condes · Santiago de Chile</small></span>
+            <span><strong><T k="marca.nombre">Grupo Scout Alcázar</T></strong><small><T k="pie.lugar">Las Condes · Santiago de Chile</T></small></span>
           </div>
-          <p className="footer-text">Parte de la Asociación de Guías y Scouts de Chile. Formamos personas comprometidas con su comunidad a través del juego, la aventura y el servicio.</p>
-          <p className="motto">“Siempre Listos”</p>
+          <p className="footer-text"><T k="pie.texto">Parte de la Asociación de Guías y Scouts de Chile. Formamos personas comprometidas con su comunidad a través del juego, la aventura y el servicio.</T></p>
+          <p className="motto"><T k="pie.lema">“Siempre Listos”</T></p>
         </div>
         <div>
           <h4>Navegación</h4>
@@ -121,7 +121,7 @@ export function Footer() {
         </div>
       </div>
       <div className="footer-bottom">
-        <div className="container">© {new Date().getFullYear()} Grupo Scout Alcázar · Siempre Listos para Servir · <a href="./privacidad.html">Política de privacidad</a></div>
+        <div className="container">© {new Date().getFullYear()} <T k="marca.nombre">Grupo Scout Alcázar</T> · <T k="pie.frase">Siempre Listos para Servir</T> · <a href="./privacidad.html">Política de privacidad</a></div>
       </div>
     </footer>
   );

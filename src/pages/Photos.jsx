@@ -22,7 +22,7 @@ export default function Photos() {
 
   return (
     <>
-      <PageHero eyebrow="Galería privada" title="Fotos y álbumes" subtitle="Los mejores momentos del grupo, ordenados por año." />
+      <PageHero tk="fotos.cabecera" eyebrow="Galería privada" title="Fotos y álbumes" subtitle="Los mejores momentos del grupo, ordenados por año." />
       <section className="section">
         <div className="container">
           <div className="toolbar">

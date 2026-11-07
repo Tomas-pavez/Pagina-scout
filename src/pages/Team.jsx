@@ -32,7 +32,7 @@ export default function Team() {
 
   return (
     <>
-      <PageHero eyebrow="Equipo" title="Nuestros dirigentes" subtitle="Voluntarias y voluntarios que dedican su tiempo a acompañar a cada rama." />
+      <PageHero tk="equipo.cabecera" eyebrow="Equipo" title="Nuestros dirigentes" subtitle="Voluntarias y voluntarios que dedican su tiempo a acompañar a cada rama." />
       <section className="section">
         <div className="container">
           <div className="toolbar">

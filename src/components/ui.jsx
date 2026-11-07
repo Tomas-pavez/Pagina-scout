@@ -1,14 +1,17 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useLocation } from 'react-router-dom';
 import {
-  PawPrint, Bird, Compass, Tent, Mountain, HeartHandshake, X, Loader2, ImagePlus, Inbox, Lock, Upload,
+  PawPrint, Bird, Compass, Tent, Mountain, HeartHandshake, X, Loader2, ImagePlus, Inbox, Lock, Upload, Pencil, RotateCcw,
 } from 'lucide-react';
 import * as db from '../lib/db.js';
-import { useAuth, useToast } from '../lib/hooks.jsx';
+import { saveText, useAuth, useContent, useToast } from '../lib/hooks.jsx';
 
 export const RAMA_ICONS = { PawPrint, Bird, Compass, Tent, Mountain, HeartHandshake };
 
 export function Logo({ size = 44 }) {
+  const { site } = useContent();
+  if (site.logo) return <img className="logo-img" src={site.logo} width={size} height={size} alt="" aria-hidden="true" />;
   return (
     <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden="true">
       <circle cx="32" cy="32" r="31" fill="#19345F" stroke="#F57514" strokeWidth="2" />
@@ -138,7 +141,7 @@ export function SmartLink({ href, children, download, ...props }) {
 }
 
 /** Selector de imagen: sube el archivo y devuelve la URL mediante onChange. */
-export function ImageInput({ value, onChange, folder, label = 'Imagen', maxDim, private: priv = false }) {
+export function ImageInput({ value, onChange, folder, label = 'Imagen', maxDim, private: priv = false, keepPng = false }) {
   const [busy, setBusy] = useState(false);
   const toast = useToast();
   const inputRef = useRef();
@@ -147,7 +150,7 @@ export function ImageInput({ value, onChange, folder, label = 'Imagen', maxDim, 
     if (!file.type.startsWith('image/')) return toast('Selecciona un archivo de imagen.', 'error');
     setBusy(true);
     try {
-      onChange(await db.upload(file, { folder, maxDim, private: priv }));
+      onChange(await db.upload(file, { folder, maxDim, private: priv, keepPng }));
     } catch (e) {
       toast(e.message || 'No se pudo subir la imagen.', 'error');
     } finally {
@@ -211,13 +214,14 @@ export function ImageEditButton({ onSave, folder, label = 'Cambiar imagen' }) {
   );
 }
 
-export function PageHero({ title, subtitle, eyebrow, color }) {
+export function PageHero({ title, subtitle, eyebrow, color, tk }) {
+  const w = (part, text) => (tk ? <T k={`${tk}.${part}`}>{text}</T> : text);
   return (
     <section className="page-hero" style={color ? { '--accent': color } : undefined}>
       <div className="container">
-        {eyebrow && <span className="eyebrow">{eyebrow}</span>}
-        <h1>{title}</h1>
-        {subtitle && <p>{subtitle}</p>}
+        {eyebrow && <span className="eyebrow">{w('eyebrow', eyebrow)}</span>}
+        <h1>{w('title', title)}</h1>
+        {subtitle && <p>{w('subtitle', subtitle)}</p>}
       </div>
     </section>
   );
@@ -262,5 +266,102 @@ export function Facebook({ size = 22 }) {
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
     </svg>
+  );
+}
+
+
+/* ---------- Textos editables ---------- */
+
+/**
+ * Texto que un administrador puede cambiar desde la página.
+ * Uso: <T k="inicio.titulo">Texto original</T>
+ * Cada clave se guarda por separado; si se borra, vuelve el texto original.
+ */
+export function T({ k, children, multiline }) {
+  const { texts, editMode } = useContent();
+  const { isAdmin } = useAuth();
+  const [open, setOpen] = useState(false);
+  const original = typeof children === 'string' ? children : String(children ?? '');
+  const value = texts[k] ?? original;
+  if (!(isAdmin && editMode)) return <span className="t">{value}</span>;
+  return (
+    <>
+      <span
+        className="t editable"
+        role="button"
+        tabIndex={0}
+        title="Clic para editar este texto"
+        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setOpen(true); }}
+        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); setOpen(true); } }}
+      >
+        {value}
+      </span>
+      {open && (
+        <TextEditor k={k} original={original} value={value} edited={k in texts}
+          multiline={multiline ?? (original.length > 60 || original.includes('\n'))} onClose={() => setOpen(false)} />
+      )}
+    </>
+  );
+}
+
+function TextEditor({ k, original, value, edited, multiline, onClose }) {
+  const [v, setV] = useState(value);
+  const [saving, setSaving] = useState(false);
+  const toast = useToast();
+  const run = async (next) => {
+    setSaving(true);
+    try {
+      await saveText(k, next);
+      toast(next === null ? 'Se restauró el texto original' : 'Texto guardado');
+      onClose();
+    } catch (e) {
+      toast(e.message || 'No se pudo guardar', 'error');
+      setSaving(false);
+    }
+  };
+  // Portal + stopPropagation: el editor puede estar dentro de un botón o enlace,
+  // y los clics dentro del cuadro no deben activarlos.
+  return createPortal(
+    <div onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
+      <Modal title="Editar texto" onClose={onClose}>
+        <form className="form" onSubmit={(e) => { e.preventDefault(); if (v.trim()) run(v.trim()); }}>
+          <Field label="Texto" full>
+            {multiline
+              ? <textarea rows={5} value={v} onChange={(e) => setV(e.target.value)} autoFocus />
+              : <input value={v} onChange={(e) => setV(e.target.value)} autoFocus />}
+          </Field>
+          <p className="hint">Original: “{original}”</p>
+          <div className="form-actions">
+            {edited && (
+              <button type="button" className="btn btn-ghost" onClick={() => run(null)} disabled={saving}>
+                <RotateCcw size={16} /> Restaurar original
+              </button>
+            )}
+            <button type="button" className="btn btn-ghost" onClick={onClose}>Cancelar</button>
+            <button className="btn btn-primary" disabled={saving || !v.trim()}>{saving ? 'Guardando…' : 'Guardar'}</button>
+          </div>
+        </form>
+      </Modal>
+    </div>,
+    document.body
+  );
+}
+
+/** Botón flotante para que los administradores activen o desactiven la edición de textos. */
+export function EditModeToggle() {
+  const { isAdmin } = useAuth();
+  const { editMode, setEditMode } = useContent();
+  if (!isAdmin) return null;
+  return (
+    <>
+      {editMode && (
+        <div className="edit-banner" role="status">
+          <Pencil size={16} /> Modo edición: haz clic en cualquier texto con borde punteado para cambiarlo.
+        </div>
+      )}
+      <button type="button" className={`edit-toggle ${editMode ? 'on' : ''}`} onClick={() => setEditMode(!editMode)}>
+        <Pencil size={18} /> {editMode ? 'Terminar edición' : 'Editar textos'}
+      </button>
+    </>
   );
 }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Inbox, Users, Settings, Trash2, Mail, Check } from 'lucide-react';
-import { Empty, Field, Loading, PageHero } from '../components/ui.jsx';
+import { Empty, Field, ImageInput, Loading, PageHero } from '../components/ui.jsx';
 import { formatDate, useAuth, useCollection, useSettings, useToast } from '../lib/hooks.jsx';
 import * as db from '../lib/db.js';
 
@@ -8,7 +8,7 @@ export default function Admin() {
   const [tab, setTab] = useState('mensajes');
   return (
     <>
-      <PageHero eyebrow="Administración" title="Panel del grupo" subtitle="Mensajes de contacto, cuentas de usuario y datos generales del sitio." />
+      <PageHero tk="admin.cabecera" eyebrow="Administración" title="Panel del grupo" subtitle="Mensajes de contacto, cuentas de usuario y datos generales del sitio." />
       <section className="section">
         <div className="container">
           <div className="tabs" role="tablist">
@@ -105,6 +105,10 @@ function SiteSettings() {
   return (
     <form className="card form form-card" onSubmit={submit}>
       <div className="form-grid">
+        <div className="full">
+          <ImageInput label="Logo del grupo (se ve en el menú, el pie de página y la pestaña del navegador)" value={f.logo || ''} onChange={(v) => setF({ ...f, logo: v })} folder="sitio" maxDim={512} keepPng />
+          <p className="hint">Usa una imagen cuadrada, idealmente PNG con fondo transparente. Si la quitas, vuelve el logo original.</p>
+        </div>
         <Field label="Dirección" full><input value={f.address} onChange={set('address')} /></Field>
         <Field label="Horario de actividades" full><input value={f.schedule} onChange={set('schedule')} /></Field>
         <Field label="Correo de contacto"><input type="email" value={f.email} onChange={set('email')} /></Field>

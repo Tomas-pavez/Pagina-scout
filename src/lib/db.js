@@ -142,7 +142,7 @@ function readAsDataURL(blob) {
 }
 
 /** Reduce una imagen a maxDim px (lado mayor) y la convierte a JPEG/WebP. */
-export async function resizeImage(file, maxDim = 1600, quality = 0.82) {
+export async function resizeImage(file, maxDim = 1600, quality = 0.82, keepPng = false) {
   if (!file.type.startsWith('image/') || file.type === 'image/gif' || file.type === 'image/svg+xml') return file;
   const url = URL.createObjectURL(file);
   try {
@@ -157,7 +157,8 @@ export async function resizeImage(file, maxDim = 1600, quality = 0.82) {
     canvas.width = Math.round(img.width * scale);
     canvas.height = Math.round(img.height * scale);
     canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-    const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', quality));
+    const type = keepPng && file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, type, quality));
     return blob || file;
   } finally {
     URL.revokeObjectURL(url);
@@ -205,14 +206,14 @@ export async function deleteFile(u) {
 }
 
 /** Sube un archivo y devuelve una URL utilizable en <img> o <a href> (o una referencia privada). */
-export async function upload(file, { folder = 'general', maxDim = 1600, private: priv = false } = {}) {
+export async function upload(file, { folder = 'general', maxDim = 1600, private: priv = false, keepPng = false } = {}) {
   const isImage = file.type.startsWith('image/');
-  const blob = isImage ? await resizeImage(file, maxDim) : file;
+  const blob = isImage ? await resizeImage(file, maxDim, 0.82, keepPng) : file;
   if (MODE === 'local') {
     if (blob.size > 8 * 1024 * 1024) throw new Error('El archivo supera 8 MB, que es el máximo en modo local.');
     return readAsDataURL(blob);
   }
-  const ext = isImage && blob !== file ? 'jpg' : (file.name.split('.').pop() || 'bin').toLowerCase();
+  const ext = isImage && blob !== file ? (blob.type === 'image/png' ? 'png' : 'jpg') : (file.name.split('.').pop() || 'bin').toLowerCase();
   const path = `${folder}/${uid()}.${ext}`;
   if (priv) {
     const { error } = await sb.storage.from(PRIVATE_BUCKET).upload(path, blob, { contentType: blob.type || file.type });

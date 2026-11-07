@@ -58,7 +58,7 @@ export default function Events() {
 
   return (
     <>
-      <PageHero eyebrow="Calendario" title="Eventos del grupo" subtitle="Campamentos, salidas, reuniones y ceremonias de todas las ramas." />
+      <PageHero tk="eventos.cabecera" eyebrow="Calendario" title="Eventos del grupo" subtitle="Campamentos, salidas, reuniones y ceremonias de todas las ramas." />
       <section className="section">
         <div className="container">
           <div className="toolbar">

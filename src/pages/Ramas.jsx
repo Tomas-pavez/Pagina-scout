@@ -7,7 +7,7 @@ export default function Ramas() {
   const { ramas, loading } = useRamas();
   return (
     <>
-      <PageHero eyebrow="Unidades" title="Nuestras ramas" subtitle="Seis unidades que acompañan a cada joven según su edad, con un programa pensado para su etapa de vida." />
+      <PageHero tk="ramas.cabecera" eyebrow="Unidades" title="Nuestras ramas" subtitle="Seis unidades que acompañan a cada joven según su edad, con un programa pensado para su etapa de vida." />
       <section className="section">
         <div className="container">
           <div className="quick-links reveal">

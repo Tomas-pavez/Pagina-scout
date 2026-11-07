@@ -33,7 +33,7 @@ export default function Contact() {
 
   return (
     <>
-      <PageHero eyebrow="Contacto" title="Conversemos" subtitle="¿Quieres inscribirte, tienes dudas o te gustaría ser dirigente? Escríbenos." />
+      <PageHero tk="contacto.cabecera" eyebrow="Contacto" title="Conversemos" subtitle="¿Quieres inscribirte, tienes dudas o te gustaría ser dirigente? Escríbenos." />
       <section className="section">
         <div className="container contact-layout">
           <div className="contact-info">
