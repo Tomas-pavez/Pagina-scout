@@ -539,3 +539,9 @@ textarea { resize: vertical; }
 .socials.big a { width: auto; height: auto; background: transparent; border-radius: 999px; display: inline-flex; }
 .socials.big a:hover { background: var(--navy); }
 .footer-bottom { border-top: 1px solid rgba(255,255,255,.1); padding: 18px 0; font-size: .85rem; text-align: center; }
+
+/* Inicio de sesión con Google */
+.btn-google { background: #fff; color: #1f2937; border-color: var(--line); box-shadow: var(--shadow); }
+.btn-google:hover:not(:disabled) { border-color: var(--navy); }
+.divider { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: .85rem; }
+.divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--line); }

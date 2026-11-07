@@ -9,7 +9,10 @@ import { FAQS_BASE, SETTINGS_BASE } from '../data/seed.js';
 const SB_URL = import.meta.env.VITE_SUPABASE_URL;
 const SB_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 export const MODE = SB_URL && SB_KEY ? 'supabase' : 'local';
-const sb = MODE === 'supabase' ? createClient(SB_URL, SB_KEY) : null;
+// flowType 'pkce': al volver de Google llega "?code=..." en vez de tokens en el "#",
+// así no choca con las rutas de la página (que usan "#/...").
+const sb = MODE === 'supabase' ? createClient(SB_URL, SB_KEY, { auth: { flowType: 'pkce' } }) : null;
+export const GOOGLE_ENABLED = MODE === 'supabase';
 
 export const uid = () =>
   (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2));
@@ -240,6 +243,13 @@ export const auth = {
     const p = data.session ? await sbProfile(data.user) : null;
     emitAuth(p);
     return p;
+  },
+  /** Inicia sesión con Google (solo con Supabase). Redirige a Google y vuelve a esta misma página. */
+  async loginWithGoogle() {
+    if (MODE !== 'supabase') throw new Error('El inicio con Google requiere conectar Supabase.');
+    const redirectTo = window.location.origin + window.location.pathname;
+    const { error } = await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo } });
+    if (error) throw new Error(error.message);
   },
   async logout() {
     if (MODE === 'local') localStorage.removeItem('session-user');

@@ -121,7 +121,7 @@ export function Footer() {
         </div>
       </div>
       <div className="footer-bottom">
-        <div className="container">© {new Date().getFullYear()} Grupo Scout Alcázar · Siempre Listos para Servir</div>
+        <div className="container">© {new Date().getFullYear()} Grupo Scout Alcázar · Siempre Listos para Servir · <a href="./privacidad.html">Política de privacidad</a></div>
       </div>
     </footer>
   );
