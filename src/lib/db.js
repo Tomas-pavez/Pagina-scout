@@ -317,6 +317,22 @@ export const auth = {
       if (error) throw error;
     }
   },
+  /** Elimina por completo una cuenta pendiente (solo administradores). */
+  async deleteUser(id) {
+    if (MODE === 'local') {
+      const u = await local.get('_users', id);
+      if (!u || u.role !== 'pending') throw new Error('Solo se pueden eliminar cuentas pendientes.');
+      await local.remove('_users', id);
+      return;
+    }
+    const { error } = await sb.rpc('delete_user', { target: id });
+    if (error) {
+      if (/function .*delete_user|Could not find the function/i.test(error.message)) {
+        throw new Error('Falta activar esta función en Supabase (archivo actualizacion-eliminar-usuarios.sql).');
+      }
+      throw new Error(error.message);
+    }
+  },
 };
 
 if (sb) {

@@ -38,6 +38,24 @@ create policy "perfil propio o admin" on profiles for select using (id = auth.ui
 drop policy if exists "admin cambia roles" on profiles;
 create policy "admin cambia roles" on profiles for update using (is_admin());
 
+-- Eliminar cuentas pendientes (solo administradores, desde Administración > Usuarios).
+create or replace function public.delete_user(target uuid) returns void
+language plpgsql security definer set search_path = public, auth as $$
+begin
+  if not public.is_admin() then
+    raise exception 'Solo los administradores pueden eliminar cuentas';
+  end if;
+  if target = auth.uid() then
+    raise exception 'No puedes eliminar tu propia cuenta';
+  end if;
+  if not exists (select 1 from public.profiles where id = target and role = 'pending') then
+    raise exception 'Solo se pueden eliminar cuentas pendientes';
+  end if;
+  delete from auth.users where id = target;  -- el perfil se borra solo (on delete cascade)
+end $$;
+revoke all on function public.delete_user(uuid) from public, anon;
+grant execute on function public.delete_user(uuid) to authenticated;
+
 -- 2) Registros (cada fila = un registro independiente) ----------------------
 create table if not exists public.records (
   collection text not null,

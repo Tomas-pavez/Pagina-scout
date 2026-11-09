@@ -83,6 +83,10 @@ function UsersPanel() {
     if (u.role === 'admin' && role !== 'admin' && !window.confirm(`¿Quitarle los permisos de administrador a ${u.name}?`)) return;
     try { await db.auth.setRole(u.id, role); toast(msg); load(); } catch (e) { toast(e.message, 'error'); }
   };
+  const removeUser = async (u) => {
+    if (!window.confirm(`¿Eliminar la cuenta de ${u.name} (${u.email})?\n\nSe borra por completo y no se puede deshacer. Si la persona vuelve a registrarse, aparecerá de nuevo en Pendientes.`)) return;
+    try { await db.auth.deleteUser(u.id); toast(`Cuenta de ${u.name} eliminada`); load(); } catch (e) { toast(e.message, 'error'); }
+  };
   const label = { pending: 'Pendiente', member: 'Miembro', admin: 'Administrador' };
 
   return (
@@ -119,6 +123,7 @@ function UsersPanel() {
                     {u.role !== 'admin' && <button className="btn btn-sm btn-outline" onClick={() => change(u, 'admin', `${u.name} ahora es administrador`)}>Hacer admin</button>}
                     {u.role === 'admin' && <button className="btn btn-sm btn-outline" onClick={() => change(u, 'member', `${u.name} ahora es miembro`)}>Quitar admin</button>}
                     {u.role === 'member' && <button className="btn btn-sm btn-danger-ghost" onClick={() => change(u, 'pending', `${u.name} ya no tiene acceso`)}>Quitar acceso</button>}
+                    {u.role === 'pending' && <button className="btn btn-sm btn-danger-ghost" onClick={() => removeUser(u)}><Trash2 size={15} /> Eliminar</button>}
                   </div>
                 )}
               </li>
