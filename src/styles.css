@@ -564,3 +564,33 @@ textarea { resize: vertical; }
 .logo-img { border-radius: 50%; object-fit: cover; flex: none; }
 .color-field { display: flex; gap: 8px; align-items: center; }
 .color-field input[type=color] { width: 48px; height: 44px; padding: 2px; border: 2px solid var(--line); border-radius: 10px; background: #fff; cursor: pointer; }
+
+/* Equipo: foto grande con la información al lado */
+.member-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+.member-card { flex-direction: row; gap: 0; padding: 0; overflow: hidden; border-top: 0; border-left: 6px solid var(--rama); align-items: stretch; }
+.member-photo { flex: 0 0 42%; max-width: 240px; min-height: 260px; background: var(--cream-200); position: relative; }
+.member-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.member-photo-ph { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); background: linear-gradient(135deg, var(--cream-200), color-mix(in srgb, var(--rama) 18%, var(--cream))); }
+.member-body { flex: 1; min-width: 0; padding: 22px; display: flex; flex-direction: column; gap: 12px; }
+.member-body h3 { font-size: 1.35rem; }
+@media (max-width: 1000px) { .member-grid { grid-template-columns: 1fr; } }
+@media (max-width: 560px) {
+  .member-card { flex-direction: column; border-left: 0; border-top: 6px solid var(--rama); }
+  .member-photo { flex: none; max-width: none; width: 100%; aspect-ratio: 4 / 3; min-height: 0; }
+}
+
+/* Administración > Usuarios */
+.users-panel .toolbar { margin-bottom: 10px; }
+.chip .count { display: inline-grid; place-items: center; min-width: 22px; height: 22px; padding: 0 6px; margin-left: 4px; border-radius: 999px; background: var(--cream-200); color: var(--navy); font-size: .78rem; }
+.chip.active .count { background: rgba(255,255,255,.25); color: #fff; }
+.chip .count.alert { background: var(--orange); color: #fff; }
+.search { max-width: 320px; }
+.user-list { list-style: none; padding: 0; margin: 16px 0 0; display: grid; gap: 10px; }
+.user-row { display: flex; align-items: center; gap: 14px; padding: 14px 18px; flex-wrap: wrap; }
+.user-avatar { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; background: var(--navy); color: #fff; font-family: var(--font-title); font-weight: 800; flex: none; }
+.user-info { flex: 1; min-width: 180px; display: flex; flex-direction: column; }
+.user-info small { color: var(--muted); word-break: break-all; }
+.user-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.role-pill { align-self: flex-start; margin-top: 4px; font-size: .75rem; font-weight: 700; padding: 2px 10px; border-radius: 999px; background: var(--cream-200); color: var(--navy); }
+.role-pill.role-pending { background: #fde68a; color: #78350f; }
+.role-pill.role-admin { background: var(--navy); color: #fff; }

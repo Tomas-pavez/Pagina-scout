@@ -59,32 +59,73 @@ function UsersPanel() {
   const toast = useToast();
   const load = () => db.auth.listUsers().then(setUsers).catch((e) => { toast(e.message, 'error'); setUsers([]); });
   useEffect(() => { load(); }, []);
+  const [group, setGroup] = useState(null);
+  const [q, setQ] = useState('');
   if (!users) return <Loading />;
   if (!users.length) return <Empty icon={Users} title="No hay usuarios" />;
-  const change = async (u, role) => {
-    try { await db.auth.setRole(u.id, role); toast('Rol actualizado'); load(); } catch (e) { toast(e.message, 'error'); }
+
+  const GROUPS = [
+    { id: 'pending', label: 'Pendientes', hint: 'Cuentas nuevas que esperan tu aprobación. Aún no ven nada privado.' },
+    { id: 'member', label: 'Miembros', hint: 'Pueden ver Fotos, Eventos, Comunicaciones y Equipo.' },
+    { id: 'admin', label: 'Administradores', hint: 'Además pueden crear, editar y eliminar contenido.' },
+  ];
+  const count = (r) => users.filter((u) => u.role === r).length;
+  // Por defecto se abre "Pendientes" si hay alguno; si no, "Miembros".
+  const active = group || (count('pending') ? 'pending' : 'member');
+  const term = q.trim().toLowerCase();
+  const list = users
+    .filter((u) => (term ? true : u.role === active))
+    .filter((u) => !term || `${u.name} ${u.email}`.toLowerCase().includes(term))
+    .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+  const change = async (u, role, msg) => {
+    if (role === 'admin' && !window.confirm(`¿Dar permisos de administrador a ${u.name}? Podrá editar y borrar todo el contenido.`)) return;
+    if (u.role === 'admin' && role !== 'admin' && !window.confirm(`¿Quitarle los permisos de administrador a ${u.name}?`)) return;
+    try { await db.auth.setRole(u.id, role); toast(msg); load(); } catch (e) { toast(e.message, 'error'); }
   };
+  const label = { pending: 'Pendiente', member: 'Miembro', admin: 'Administrador' };
+
   return (
-    <div className="card table-card">
-      <table className="table">
-        <thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th></tr></thead>
-        <tbody>
-          {users.map((u) => (
-            <tr key={u.id}>
-              <td>{u.name}</td>
-              <td>{u.email}</td>
-              <td>
-                <select value={u.role} onChange={(e) => change(u, e.target.value)} disabled={u.id === user.id} aria-label={`Rol de ${u.name}`}>
-                  <option value="pending">Pendiente</option>
-                  <option value="member">Miembro</option>
-                  <option value="admin">Administrador</option>
-                </select>
-              </td>
-            </tr>
+    <div className="users-panel">
+      <div className="toolbar">
+        <div className="chips" role="group" aria-label="Tipo de cuenta">
+          {GROUPS.map((g) => (
+            <button key={g.id} className={`chip ${!term && active === g.id ? 'active' : ''}`} onClick={() => { setGroup(g.id); setQ(''); }}>
+              {g.label} <span className={`count ${g.id === 'pending' && count('pending') ? 'alert' : ''}`}>{count(g.id)}</span>
+            </button>
           ))}
-        </tbody>
-      </table>
-      <p className="muted small">“Miembro” puede ver Fotos, Eventos, Comunicaciones y Equipo. “Administrador” además puede crear, editar y eliminar contenido.</p>
+        </div>
+        <input className="search" type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar por nombre o correo…" aria-label="Buscar usuario" />
+      </div>
+      <p className="muted small">{term ? `Resultados de "${q.trim()}" en todas las cuentas.` : GROUPS.find((g) => g.id === active).hint}</p>
+
+      {list.length === 0 ? (
+        <Empty icon={Users} title={term ? 'No se encontró a nadie' : active === 'pending' ? 'No hay cuentas pendientes' : 'No hay cuentas en este grupo'} />
+      ) : (
+        <ul className="user-list">
+          {list.map((u) => {
+            const me = u.id === user.id;
+            return (
+              <li key={u.id} className="card user-row">
+                <span className="user-avatar">{(u.name || u.email || '?').trim()[0].toUpperCase()}</span>
+                <div className="user-info">
+                  <strong>{u.name}{me && ' (tú)'}</strong>
+                  <small>{u.email}</small>
+                  {term && <span className={`role-pill role-${u.role}`}>{label[u.role]}</span>}
+                </div>
+                {!me && (
+                  <div className="user-actions">
+                    {u.role === 'pending' && <button className="btn btn-sm btn-primary" onClick={() => change(u, 'member', `${u.name} ahora es miembro`)}><Check size={15} /> Aprobar</button>}
+                    {u.role !== 'admin' && <button className="btn btn-sm btn-outline" onClick={() => change(u, 'admin', `${u.name} ahora es administrador`)}>Hacer admin</button>}
+                    {u.role === 'admin' && <button className="btn btn-sm btn-outline" onClick={() => change(u, 'member', `${u.name} ahora es miembro`)}>Quitar admin</button>}
+                    {u.role === 'member' && <button className="btn btn-sm btn-danger-ghost" onClick={() => change(u, 'pending', `${u.name} ya no tiene acceso`)}>Quitar acceso</button>}
+                  </div>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </div>
   );
 }

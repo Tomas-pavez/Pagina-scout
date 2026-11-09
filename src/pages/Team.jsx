@@ -55,7 +55,7 @@ export default function Team() {
                 <div className="team-group" key={g.id}>
                   <h2 className="block-title"><span className="dot lg" style={{ background: g.color }} /> {g.name}</h2>
                   {list.length ? (
-                    <div className="grid-3">
+                    <div className="member-grid">
                       {list.map((m) => (
                         <MemberCard key={m.id} m={m} ramas={ramas} showContact onEdit={isAdmin ? (x) => setEditing({ ...EMPTY, ...x }) : null} onDelete={isAdmin ? del : null} />
                       ))}

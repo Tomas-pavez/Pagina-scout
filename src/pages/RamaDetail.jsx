@@ -141,7 +141,7 @@ export default function RamaDetail() {
           <div className="block reveal">
             <h2 className="block-title"><Users size={24} /> Responsables de la rama</h2>
             {members.loading ? <Loading /> : responsables.length ? (
-              <div className="grid-3">
+              <div className="member-grid">
                 {responsables.map((m) => <MemberCard key={m.id} m={m} ramas={ramas} showContact={!!user} />)}
               </div>
             ) : (

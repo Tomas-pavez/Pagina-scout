@@ -13,8 +13,11 @@ export function MemberCard({ m, ramas, showContact, onEdit, onDelete }) {
   const color = m.unidad === 'admin' ? '#19345F' : unitColor(ramas, m.unidad);
   return (
     <article className="card member-card reveal" style={{ '--rama': color }}>
+      <div className="member-photo">
+        {m.photo ? <img src={m.photo} alt={`Foto de ${m.name}`} loading="lazy" /> : <span className="member-photo-ph"><User size={64} strokeWidth={1.5} /></span>}
+      </div>
+      <div className="member-body">
       <div className="member-top">
-        {m.photo ? <img className="avatar" src={m.photo} alt={m.name} loading="lazy" /> : <span className="avatar avatar-ph"><User size={36} /></span>}
         <div>
           <h3>{m.name}</h3>
           {m.cargo && <p className="member-role">{m.cargo}</p>}
@@ -45,6 +48,7 @@ export function MemberCard({ m, ramas, showContact, onEdit, onDelete }) {
           {onDelete && <button className="btn btn-sm btn-danger-ghost" onClick={() => onDelete(m)}><Trash2 size={15} /> Eliminar</button>}
         </div>
       )}
+      </div>
     </article>
   );
 }
