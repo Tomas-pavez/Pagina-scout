@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Inbox, Users, Settings, Trash2, Mail, Check } from 'lucide-react';
+import { Inbox, Users, Settings, Trash2, Mail, Check, Reply, Send } from 'lucide-react';
 import { Empty, Field, ImageInput, Loading, PageHero } from '../components/ui.jsx';
 import { formatDate, useAuth, useCollection, useSettings, useToast } from '../lib/hooks.jsx';
 import * as db from '../lib/db.js';
@@ -27,29 +27,126 @@ export default function Admin() {
 
 function Messages() {
   const { items, loading } = useCollection('messages');
-  const toast = useToast();
-  const list = [...items].sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+  const [filter, setFilter] = useState(null);
   if (loading) return <Loading />;
-  if (!list.length) return <Empty icon={Inbox} title="No hay mensajes" text="Los mensajes del formulario de contacto aparecerán aquí." />;
+  if (!items.length) return <Empty icon={Inbox} title="No hay mensajes" text="Los mensajes del formulario de contacto aparecerán aquí." />;
+  const answered = (m) => (m.replies || []).length > 0;
+  const pendingCount = items.filter((m) => !answered(m)).length;
+  const active = filter || (pendingCount ? 'pending' : 'all');
+  const list = items
+    .filter((m) => (active === 'pending' ? !answered(m) : active === 'done' ? answered(m) : true))
+    .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+  const FILTERS = [['pending', 'Sin responder', pendingCount], ['done', 'Respondidos', items.length - pendingCount], ['all', 'Todos', items.length]];
   return (
-    <div className="comm-list">
-      {list.map((m) => (
-        <article key={m.id} className={`card comm ${m.read ? '' : 'unread'}`}>
-          <div className="comm-head">
-            <div className="tags"><span className="tag tag-navy">{m.reason}</span>{!m.read && <span className="tag tag-new">Nuevo</span>}</div>
-            <time className="muted">{formatDate(m.createdAt)}</time>
+    <>
+      <div className="chips" role="group" aria-label="Filtrar mensajes" style={{ marginBottom: 18 }}>
+        {FILTERS.map(([id, l, n]) => (
+          <button key={id} className={`chip ${active === id ? 'active' : ''}`} onClick={() => setFilter(id)}>
+            {l} <span className={`count ${id === 'pending' && n ? 'alert' : ''}`}>{n}</span>
+          </button>
+        ))}
+      </div>
+      {list.length === 0 ? (
+        <Empty icon={Inbox} title={active === 'pending' ? '¡Todo respondido!' : 'No hay mensajes aquí'} />
+      ) : (
+        <div className="comm-list">{list.map((m) => <MessageCard key={m.id} m={m} />)}</div>
+      )}
+    </>
+  );
+}
+
+const gmailUrl = (to, subject, body) =>
+  `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(to)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+const mailtoUrl = (to, subject, body) =>
+  `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+function MessageCard({ m }) {
+  const { user } = useAuth();
+  const toast = useToast();
+  const [open, setOpen] = useState(false);
+  const [text, setText] = useState('');
+  const [busy, setBusy] = useState(false);
+  const replies = m.replies || [];
+  const subject = `Re: ${m.reason || 'Tu mensaje'} - Grupo Scout Alcázar`;
+  const me = user?.name || 'Administrador';
+
+  const send = async (via) => {
+    const reply = text.trim();
+    if (!reply) return toast('Escribe tu respuesta primero', 'error');
+    const quoted = (m.message || '').split('\n').map((l) => `> ${l}`).join('\n');
+    const body = `${reply}\n\n---\nEl ${formatDate(m.createdAt)}, ${m.name} escribió:\n${quoted}`;
+    // La pestaña de Gmail se abre antes de guardar para que el navegador no la bloquee.
+    const win = via === 'gmail' ? window.open('about:blank', '_blank') : null;
+    setBusy(true);
+    try {
+      await db.save('messages', { ...m, read: true, replies: [...replies, { text: reply, by: me, at: new Date().toISOString() }] });
+      const url = via === 'gmail' ? gmailUrl(m.email, subject, body) : mailtoUrl(m.email, subject, body);
+      if (win) win.location.href = url;
+      else window.location.href = url;
+      toast('Respuesta guardada. Revisa que se haya enviado desde tu correo.');
+      setText('');
+      setOpen(false);
+    } catch (e) {
+      if (win) win.close();
+      toast(e.message || 'No se pudo guardar la respuesta', 'error');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const markDone = () =>
+    db.save('messages', { ...m, read: true, replies: [{ text: '(Respondido por otro medio)', by: me, at: new Date().toISOString() }] });
+
+  const del = async () => {
+    if (!window.confirm('¿Eliminar este mensaje y sus respuestas?')) return;
+    await db.remove('messages', m.id);
+    toast('Mensaje eliminado');
+  };
+
+  return (
+    <article className={`card comm ${replies.length ? 'answered' : 'unread'}`}>
+      <div className="comm-head">
+        <div className="tags">
+          <span className="tag tag-navy">{m.reason}</span>
+          {replies.length ? <span className="tag tag-done"><Check size={12} /> Respondido</span> : <span className="tag tag-new">Sin responder</span>}
+        </div>
+        <time className="muted">{formatDate(m.createdAt)}</time>
+      </div>
+      <h3>{m.name}</h3>
+      <p className="muted">{m.email}{m.phone && ` · ${m.phone}`}</p>
+      <p className="pre">{m.message}</p>
+
+      {replies.length > 0 && (
+        <div className="replies">
+          {replies.map((r, i) => (
+            <div key={i} className="reply">
+              <small><Reply size={13} /> Respondido por <b>{r.by}</b> · {new Date(r.at).toLocaleString('es-CL', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}</small>
+              <p className="pre">{r.text}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {open ? (
+        <div className="reply-box">
+          <Field label={`Tu respuesta para ${m.name}`} full>
+            <textarea rows={5} value={text} onChange={(e) => setText(e.target.value)} autoFocus placeholder="Hola, gracias por escribirnos..." />
+          </Field>
+          <p className="hint">Al enviar, la respuesta se guarda aquí y se abre tu correo con todo listo: solo tienes que pulsar Enviar.</p>
+          <div className="row-gap">
+            <button className="btn btn-sm btn-primary" disabled={busy || !text.trim()} onClick={() => send('gmail')}><Send size={15} /> Enviar con Gmail</button>
+            <button className="btn btn-sm btn-outline" disabled={busy || !text.trim()} onClick={() => send('mailto')}><Mail size={15} /> Otro programa de correo</button>
+            <button className="btn btn-sm btn-ghost" onClick={() => setOpen(false)}>Cancelar</button>
           </div>
-          <h3>{m.name}</h3>
-          <p className="muted">{m.email}{m.phone && ` · ${m.phone}`}</p>
-          <p className="pre">{m.message}</p>
-          <div className="admin-row">
-            <a className="btn btn-sm btn-secondary" href={`mailto:${m.email}?subject=${encodeURIComponent('Grupo Scout Alcázar: ' + m.reason)}`}><Mail size={15} /> Responder</a>
-            {!m.read && <button className="btn btn-sm btn-outline" onClick={() => db.save('messages', { ...m, read: true })}><Check size={15} /> Marcar leído</button>}
-            <button className="btn btn-sm btn-danger-ghost" onClick={async () => { if (window.confirm('¿Eliminar este mensaje?')) { await db.remove('messages', m.id); toast('Mensaje eliminado'); } }}><Trash2 size={15} /> Eliminar</button>
-          </div>
-        </article>
-      ))}
-    </div>
+        </div>
+      ) : (
+        <div className="admin-row">
+          <button className="btn btn-sm btn-secondary" onClick={() => setOpen(true)}><Reply size={15} /> {replies.length ? 'Responder de nuevo' : 'Responder'}</button>
+          {!replies.length && <button className="btn btn-sm btn-outline" onClick={markDone}><Check size={15} /> Ya lo respondí por otro medio</button>}
+          <button className="btn btn-sm btn-danger-ghost" onClick={del}><Trash2 size={15} /> Eliminar</button>
+        </div>
+      )}
+    </article>
   );
 }
 

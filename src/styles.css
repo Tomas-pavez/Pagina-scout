@@ -594,3 +594,13 @@ textarea { resize: vertical; }
 .role-pill { align-self: flex-start; margin-top: 4px; font-size: .75rem; font-weight: 700; padding: 2px 10px; border-radius: 999px; background: var(--cream-200); color: var(--navy); }
 .role-pill.role-pending { background: #fde68a; color: #78350f; }
 .role-pill.role-admin { background: var(--navy); color: #fff; }
+
+/* Mensajes: respuestas dentro de la página */
+.comm.answered { border-left-color: var(--green); }
+.tag-done { background: var(--green); }
+.tag-new { background: var(--orange); }
+.replies { display: grid; gap: 10px; }
+.reply { background: #f0faf4; border: 1px solid #c8ebd5; border-radius: 12px; padding: 12px 14px; }
+.reply small { display: flex; align-items: center; gap: 6px; color: var(--muted); flex-wrap: wrap; }
+.reply p { margin: 6px 0 0; }
+.reply-box { background: var(--cream); border-radius: 12px; padding: 14px; display: grid; gap: 10px; }
