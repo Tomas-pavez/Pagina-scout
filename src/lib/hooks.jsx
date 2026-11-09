@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import * as db from './db.js';
-import { RAMAS_BASE, SETTINGS_BASE } from '../data/seed.js';
+import { PATRULLAS_BASE, RAMAS_BASE, SETTINGS_BASE } from '../data/seed.js';
 
 /* ---------- Sesión ---------- */
 const AuthCtx = createContext(null);
@@ -51,6 +51,26 @@ export function useRamas() {
   const ramas = RAMAS_BASE.map((base) => ({ ...base, ...(items.find((i) => i.id === base.id) || {}) }));
   return { ramas, loading, error };
 }
+/* ---------- Patrullas ----------
+   Se guardan en la colección pública "ramas" con id "patrulla:<rama>:<clave>",
+   cada una como registro propio. Las patrullas iniciales salen de PATRULLAS_BASE
+   hasta que se editan; quitar una deja una marca "eliminada". */
+const slug = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+export const patrullaId = (ramaId, key) => `patrulla:${ramaId}:${key}`;
+
+export function usePatrullas(ramaId) {
+  const { items, loading } = useCollection('ramas');
+  const stored = items.filter((i) => i.kind === 'patrulla' && i.rama === ramaId);
+  const base = (PATRULLAS_BASE[ramaId] || []).map((nombre, i) => ({
+    id: patrullaId(ramaId, slug(nombre)), key: slug(nombre), kind: 'patrulla', rama: ramaId, nombre, order: i + 1,
+    animal: '', grito: '', himno: '', descripcion: '', panolin: '', foto: '',
+  }));
+  const merged = base.map((b) => ({ ...b, ...(stored.find((s) => s.id === b.id) || {}) }));
+  stored.forEach((s) => { if (!merged.some((m) => m.id === s.id)) merged.push(s); });
+  const patrullas = merged.filter((p) => !p.deleted).sort((a, b) => (a.order || 0) - (b.order || 0));
+  return { patrullas, loading, hasBase: ramaId in PATRULLAS_BASE };
+}
+
 export function useRama(id) {
   const { ramas, loading, error } = useRamas();
   return { rama: ramas.find((r) => r.id === id), loading, error };

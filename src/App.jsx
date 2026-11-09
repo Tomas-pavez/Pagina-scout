@@ -6,6 +6,7 @@ import Home from './pages/Home.jsx';
 import About from './pages/About.jsx';
 import Ramas from './pages/Ramas.jsx';
 import RamaDetail from './pages/RamaDetail.jsx';
+import PatrullaDetail from './pages/PatrullaDetail.jsx';
 import Team from './pages/Team.jsx';
 import Events from './pages/Events.jsx';
 import Photos from './pages/Photos.jsx';
@@ -68,6 +69,7 @@ export default function App() {
           <Route path="/quienes-somos" element={<About />} />
           <Route path="/ramas" element={<Ramas />} />
           <Route path="/ramas/:id" element={<RamaDetail />} />
+          <Route path="/ramas/:id/patrullas/:pid" element={<PatrullaDetail />} />
           <Route path="/preguntas-frecuentes" element={<FAQ />} />
           <Route path="/contacto" element={<Contact />} />
           <Route path="/ingresar" element={<Login />} />

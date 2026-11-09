@@ -6,6 +6,7 @@ import {
 import { Empty, Field, ImageInput, Loading, Modal, RamaImage } from '../components/ui.jsx';
 import { AlbumCard, EventRow, MemberCard } from '../components/Shared.jsx';
 import ImageSteps from '../components/ImageSteps.jsx';
+import { PatrullasSection } from './PatrullaDetail.jsx';
 import { ETAPAS_BASE, PANOLINES_BASE } from '../data/seed.js';
 import { EventDetail } from './Events.jsx';
 import { todayISO, useAuth, useCollection, useRama, useRamas, useToast } from '../lib/hooks.jsx';
@@ -132,6 +133,8 @@ export default function RamaDetail() {
             folder={`ramas/${rama.id}/panolines`}
             onSave={(list) => db.patch('ramas', rama.id, { panolines: list })}
           />
+
+          <PatrullasSection rama={rama} />
 
           {ceremonial.length > 0 && (
             <div className="block reveal">

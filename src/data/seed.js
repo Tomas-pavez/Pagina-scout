@@ -85,6 +85,13 @@ export const ETAPAS_BASE = {
 // Recuadros iniciales de la sección Pañolines (se pueden agregar o quitar).
 export const PANOLINES_BASE = ['Pañolín del grupo', 'Pañolín de la rama', 'Pañolín de promesa'];
 
+// Patrullas iniciales de las ramas que trabajan por patrullas.
+// Cada patrulla se guarda como un registro propio y se puede editar o quitar.
+export const PATRULLAS_BASE = {
+  tropa: ['Grifo', 'Fénix', 'Atlante', 'Quimera'],
+  compania: ['Hydra', 'Mantícora', 'Grayas', 'Vemoth'],
+};
+
 export const FAQS_BASE = [
   {
     q: '¿Desde qué edad pueden participar?',
