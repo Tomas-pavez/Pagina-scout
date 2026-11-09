@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
-  ArrowLeft, Pencil, Target, Activity, Quote, Megaphone, Shirt, Flag, Sparkles, BookOpen, Music, FileText, Link2, Plus, Trash2, Lock, CalendarDays, Images, Users, Info, Upload,
+  ArrowLeft, Pencil, Target, Activity, Quote, Megaphone, Shirt, Flag, Sparkles, BookOpen, Music, FileText, Link2, Plus, Trash2, Lock, CalendarDays, Images, Users, Info, Upload, Award,
 } from 'lucide-react';
 import { Empty, Field, ImageInput, Loading, Modal, RamaImage } from '../components/ui.jsx';
 import { AlbumCard, EventRow, MemberCard } from '../components/Shared.jsx';
+import ImageSteps from '../components/ImageSteps.jsx';
+import { ETAPAS_BASE, PANOLINES_BASE } from '../data/seed.js';
 import { EventDetail } from './Events.jsx';
 import { todayISO, useAuth, useCollection, useRama, useRamas, useToast } from '../lib/hooks.jsx';
 import * as db from '../lib/db.js';
@@ -57,10 +59,14 @@ export default function RamaDetail() {
     .sort((a, b) => (a.date + (a.start || '')).localeCompare(b.date + (b.start || '')))
     .slice(0, 6);
   const ramaAlbums = albums.items.filter((a) => a.rama === rama.id).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-  const hasContent = CONTENT_KEYS.some((k) => has(rama[k])) || (rama.documentos || []).length > 0;
+  const filled = (list) => (list || []).some((i) => i.imagen || i.texto);
+  const hasContent = CONTENT_KEYS.some((k) => has(rama[k])) || (rama.documentos || []).length > 0 || filled(rama.etapas) || filled(rama.panolines);
   const ceremonial = CEREMONIAL.filter(([k]) => has(rama[k]));
   const otros = OTROS.filter(([k]) => has(rama[k]));
   const docs = (rama.documentos || []).filter((d) => d.url);
+  const toItems = (names, prefix) => names.map((nombre, i) => ({ id: `${prefix}${i}`, nombre, imagen: '', texto: '' }));
+  const etapas = rama.etapas ?? toItems(ETAPAS_BASE[rama.id] || [], 'e');
+  const panolines = rama.panolines ?? toItems(PANOLINES_BASE, 'p');
 
   return (
     <div style={{ '--rama': rama.color }}>
@@ -102,6 +108,30 @@ export default function RamaDetail() {
               ))}
             </div>
           )}
+
+          <ImageSteps
+            title="Etapas de progresión"
+            icon={Award}
+            itemName="Etapa"
+            arrows
+            color={rama.color}
+            intro="El camino que recorre cada integrante de la rama, de la primera a la última etapa."
+            items={etapas}
+            isAdmin={isAdmin}
+            folder={`ramas/${rama.id}/etapas`}
+            onSave={(list) => db.patch('ramas', rama.id, { etapas: list })}
+          />
+
+          <ImageSteps
+            title="Pañolines"
+            icon={Flag}
+            itemName="Pañolín"
+            color={rama.color}
+            items={panolines}
+            isAdmin={isAdmin}
+            folder={`ramas/${rama.id}/panolines`}
+            onSave={(list) => db.patch('ramas', rama.id, { panolines: list })}
+          />
 
           {ceremonial.length > 0 && (
             <div className="block reveal">

@@ -70,6 +70,21 @@ export const RAMAS_BASE = [
 
 export const RAMA_IDS = RAMAS_BASE.map((r) => r.id);
 
+// Etapas de progresión por rama, según las insignias oficiales de la
+// Asociación de Guías y Scouts de Chile (tienda Camping Scout).
+// Los administradores pueden cambiar nombres, orden, imágenes y textos.
+export const ETAPAS_BASE = {
+  manada: ['Lobezno', 'Saltador', 'Diestro', 'Cazador'],
+  golondrinas: ['Pichón', 'Aprendiz', 'Viajera', 'Guía de Vuelo'],
+  compania: ['Alba', 'Amanecer', 'Luz', 'Resplandor'],
+  tropa: ['Cernícalo', 'Halcón', 'Águila', 'Cóndor'],
+  avanzada: ['Sendero', 'Cumbre'],
+  clan: ['Antorcha', 'Fuego'],
+};
+
+// Recuadros iniciales de la sección Pañolines (se pueden agregar o quitar).
+export const PANOLINES_BASE = ['Pañolín del grupo', 'Pañolín de la rama', 'Pañolín de promesa'];
+
 export const FAQS_BASE = [
   {
     q: '¿Desde qué edad pueden participar?',

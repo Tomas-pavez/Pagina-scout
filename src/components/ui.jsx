@@ -173,7 +173,7 @@ export function ImageInput({ value, onChange, folder, label = 'Imagen', maxDim, 
 }
 
 /** Botón de administrador para cambiar una imagen directamente desde una tarjeta. */
-export function ImageEditButton({ onSave, folder, label = 'Cambiar imagen' }) {
+export function ImageEditButton({ onSave, folder, label = 'Cambiar imagen', keepPng = false }) {
   const [busy, setBusy] = useState(false);
   const toast = useToast();
   const ref = useRef();
@@ -181,7 +181,7 @@ export function ImageEditButton({ onSave, folder, label = 'Cambiar imagen' }) {
     if (!file) return;
     setBusy(true);
     try {
-      await onSave(await db.upload(file, { folder }));
+      await onSave(await db.upload(file, { folder, keepPng }));
       toast('Imagen actualizada');
     } catch (e) {
       toast(e.message || 'No se pudo guardar la imagen.', 'error');

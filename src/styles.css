@@ -604,3 +604,29 @@ textarea { resize: vertical; }
 .reply small { display: flex; align-items: center; gap: 6px; color: var(--muted); flex-wrap: wrap; }
 .reply p { margin: 6px 0 0; }
 .reply-box { background: var(--cream); border-radius: 12px; padding: 14px; display: grid; gap: 10px; }
+
+/* Etapas de progresión y pañolines: recuadros grandes en una sola fila */
+.steps-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.steps-head .block-title { margin-bottom: 8px; }
+.steps-row {
+  display: grid; grid-template-columns: repeat(var(--n), minmax(220px, 1fr)); gap: 20px;
+  overflow-x: auto; padding: 6px 4px 14px; scroll-snap-type: x mandatory; margin-top: 12px;
+}
+.steps-row.with-arrows { gap: 44px; }
+.step-card { container-type: inline-size; position: relative; margin: 0; overflow: visible; display: flex; flex-direction: column; scroll-snap-align: start; border-top: 5px solid var(--rama); }
+.step-img { position: relative; aspect-ratio: 1; background: var(--cream-200); border-radius: 0 0 0 0; overflow: hidden; }
+.step-img img { width: 100%; height: 100%; object-fit: contain; background: #fff; padding: 10px; }
+.step-ph { height: 100%; display: grid; place-content: center; justify-items: center; gap: 8px; color: var(--muted); font-size: .9rem; text-align: center; background: linear-gradient(135deg, var(--cream-200), color-mix(in srgb, var(--rama) 14%, var(--cream))); }
+.step-num { position: absolute; top: 10px; left: 10px; width: 32px; height: 32px; border-radius: 50%; background: var(--rama); color: #fff; display: grid; place-items: center; font-family: var(--font-title); font-weight: 900; box-shadow: var(--shadow); }
+.step-card figcaption { padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+.step-card h3 { margin: 0; font-size: 1.25rem; }
+.step-card p { margin: 0; color: #374151; font-size: .95rem; }
+.step-tools { display: flex; gap: 2px; margin-top: auto; padding-top: 8px; border-top: 1px dashed var(--line); }
+.step-tools .icon-btn:disabled { opacity: .3; cursor: default; }
+.with-arrows .step-card:not(:last-child)::after {
+  content: '→'; position: absolute; right: -36px; top: calc(50cqw - 18px); width: 28px; text-align: center;
+  font-size: 1.8rem; font-weight: 900; color: var(--rama); pointer-events: none;
+}
+@media (max-width: 700px) {
+  .steps-row { grid-template-columns: repeat(var(--n), 78%); }
+}
